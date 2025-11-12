@@ -49,19 +49,19 @@
     }
 
     async function upsert_plan_act() {
-        console.log(this.value);
+        if (!group_id) {
+            alert("그룹이 선택되지 않았습니다.");
+            return;
+        } else if (!name) {
+            alert("요금제명이 입력되지 않았습니다.");
+            return;
+        } else if (!price) {
+            alert("가격이 입력되지 않았습니다.");
+            return;
+        }
+
         const type = this.value;
         if (type == "upload") {
-            if (!group_id) {
-                alert("그룹이 선택되지 않았습니다.");
-                return;
-            } else if (!name) {
-                alert("요금제명이 입력되지 않았습니다.");
-                return;
-            } else if (!price) {
-                alert("가격이 입력되지 않았습니다.");
-                return;
-            }
             try {
                 const res = await axios.post(
                     `${back_api}/admin/plans_upload_update`,
@@ -83,8 +83,28 @@
                 const message = error.response.data.error;
                 alert(message);
             }
-        }else{
-            
+        } else {
+            try {
+                const res = await axios.post(
+                    `${back_api}/admin/plans_upload_update`,
+                    {
+                        id,
+                        type,
+                        group_id,
+                        name,
+                        price,
+                        voice,
+                        usedata,
+                        sms,
+                        benefits,
+                    },
+                );
+                alert("요금제 수정이 완료 되었습니다.");
+                invalidateAll();
+            } catch (error) {
+                const message = error.response.data.error;
+                alert(message);
+            }
         }
     }
 
@@ -105,9 +125,65 @@
         add_plan_modal.showModal();
     }
 
-    async function sortFunc() {}
+    async function sortFunc() {
+        console.log(this.value);
+        console.log(this.dataset.idx);
 
-    async function deletePlanGroup() {}
+        let originData = {};
+        let changeData = {};
+
+        if (this.value === "up") {
+            originData = plans[this.dataset.idx];
+            changeData = plans[Number(this.dataset.idx) + 1];
+        } else {
+            originData = plans[this.dataset.idx];
+            changeData = plans[Number(this.dataset.idx) - 1];
+        }
+
+        if (!originData || !changeData) {
+            alert("더이상 이동할수 없습니다.");
+            return;
+        }
+
+        console.log(originData.id);
+        console.log(originData.plan_sort_order);
+        console.log(changeData.id);
+        console.log(changeData.plan_sort_order);
+
+        console.log("???");
+
+        try {
+            const res = await axios.post(`${back_api}/admin/plans_sort`, {
+                origin_id: originData.id,
+                origin_sort: originData.plan_sort_order,
+                change_id: changeData.id,
+                change_sort: changeData.plan_sort_order,
+            });
+            invalidateAll();
+        } catch (error) {
+            alert("정렬 변경에 실패하였습니다.");
+        }
+    }
+
+    async function deletePlan() {
+        console.log(this.value);
+        let confirm_check = confirm("정말 요금제를 삭제하시겠습니까?");
+        if (!confirm_check) {
+            return;
+        }
+        try {
+            const res = await axios.post(
+                `${back_api}/admin/plan_delete`,
+                {
+                    id: this.value,
+                },
+            );
+            alert("요금제 그룹이 삭제되었습니다.");
+            invalidateAll();
+        } catch (error) {
+            alert("요금제 그룹 삭제에 실패하였습니다.");
+        }
+    }
 </script>
 
 <!-- svelte-ignore event_directive_deprecated -->
@@ -259,6 +335,14 @@
     <button
         class="btn btn-primary btn-sm"
         on:click={() => {
+            group_id = 0;
+            name = "";
+            price = "";
+            voice = "";
+            usedata = "";
+            sms = "";
+            benefits = "";
+            actButton = "create";
             add_plan_modal.showModal();
         }}
     >
@@ -336,7 +420,7 @@
                             <button
                                 class="text-xl text-red-400 cursor-pointer"
                                 value={planData.id}
-                                on:click={deletePlanGroup}
+                                on:click={deletePlan}
                             >
                                 <i class="fa fa-times-circle" aria-hidden="true"
                                 ></i>

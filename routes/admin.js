@@ -6,7 +6,7 @@ import { getQueryStr } from '../back-lib/lib.js'
 
 const admRouter = express.Router();
 
-// ------------------------------------ 플랜 그룹 관리 ------------------------------------ //
+// ------------------------------------ 플랜(요금제) 그룹 관리 ------------------------------------ //
 
 
 // 그룹 불러오기 (read)
@@ -98,7 +98,7 @@ admRouter.use('/plan_groups_delete', async (req, res) => {
 })
 
 
-// ------------------------------------ 플랜 관리 ------------------------------------ //
+// ------------------------------------ 플랜(요금제) 관리 ------------------------------------ //
 
 admRouter.use('/get_plan', async (req, res) => {
 
@@ -182,6 +182,47 @@ admRouter.post('/plans_upload_update', async (req, res) => {
     }
 
     console.log(body);
+})
+
+
+admRouter.use('/plans_sort', async (req, res) => {
+
+    const body = req.body;
+
+    try {
+        const originMakeZeroQuery = "UPDATE plans SET sort_order = 0 WHERE id = ?";
+        await sql_con.promise().query(originMakeZeroQuery, [body.origin_id]);
+
+        const changeSortQuery = "UPDATE plans SET sort_order = ? WHERE id = ?";
+        await sql_con.promise().query(changeSortQuery, [body.origin_sort, body.change_id]);
+
+        const originSortQuery = "UPDATE plans SET sort_order = ? WHERE id = ?";
+        await sql_con.promise().query(originSortQuery, [body.change_sort, body.origin_id]);
+        res.status(200).json({})
+
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: error.message });
+    }
+
+
+})
+
+
+admRouter.use('/plan_delete', async (req, res) => {
+
+    const { id } = req.body;
+
+    try {
+        const deletePlanQuery = "DELETE FROM plans WHERE id = ?";
+        await sql_con.promise().query(deletePlanQuery, [id]);
+        res.status(200).json({})
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: error.message });
+    }
+
+
 })
 
 
