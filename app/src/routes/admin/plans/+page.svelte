@@ -1,15 +1,110 @@
 <script>
+    import { onMount } from "svelte";
+    import { back_api, carriers, networkTypes } from "$lib/const";
+    import { invalidateAll } from "$app/navigation";
+    import axios from "axios";
+
+    let { data } = $props();
+
+    let plans = $state([]); // 전체 요금제 데이터
+    let planGroups = $state([]); // 전체 요금제 그룹 데이터
+    let filterPlanGroups = $state([]); // 필터링된 요금제 그룹 데이터
+
+    onMount(() => {
+        planGroups = data.plan_groups;
+        filterPlanGroups = planGroups.filter(
+            (group) =>
+                group.carrier === carrier &&
+                group.network_type === network_type,
+        );
+    });
+
+    $effect(() => {
+        plans = data.plans;
+    });
+
+    let carrier = $state("SKT");
+    let network_type = $state("5G");
+
+    let actButton = $state("create");
 
     // 업로드 및 업데이트 할 변수들
+    let id = $state(0);
     let group_id = $state("");
     let name = $state("");
     let price = $state(0);
     let voice = $state("");
-    let data = $state("");
+    let usedata = $state("");
     let sms = $state("");
     let benefits = $state("");
+
+    // 모달에서 통신사 및 통신 방식 변경 시 filterPlanGroup 배열 만들어주는 함수1
+    function getFilterGroup() {
+        filterPlanGroups = planGroups.filter(
+            (group) =>
+                group.carrier === carrier &&
+                group.network_type === network_type,
+        );
+        console.log(filterPlanGroups);
+    }
+
+    async function upsert_plan_act() {
+        console.log(this.value);
+        const type = this.value;
+        if (type == "upload") {
+            if (!group_id) {
+                alert("그룹이 선택되지 않았습니다.");
+                return;
+            } else if (!name) {
+                alert("요금제명이 입력되지 않았습니다.");
+                return;
+            } else if (!price) {
+                alert("가격이 입력되지 않았습니다.");
+                return;
+            }
+            try {
+                const res = await axios.post(
+                    `${back_api}/admin/plans_upload_update`,
+                    {
+                        type,
+                        group_id,
+                        name,
+                        price,
+                        voice,
+                        usedata,
+                        sms,
+                        benefits,
+                    },
+                );
+                alert("요금제가 추가되었습니다.");
+                invalidateAll();
+            } catch (error) {
+                console.error(error.response.data.error);
+                const message = error.response.data.error;
+                alert(message);
+            }
+        }
+    }
+
+    function update_modal_open() {
+        console.log(plans[this.value]);
+
+        actButton = "update";
+
+        id = plans[this.value].id;
+        group_id = plans[this.value].group_id;
+        name = plans[this.value].name;
+        price = plans[this.value].price;
+        voice = plans[this.value].voice;
+        usedata = plans[this.value].usedata;
+        sms = plans[this.value].sms;
+        benefits = plans[this.value].benefits;
+
+        add_plan_modal.showModal();
+    }
 </script>
 
+<!-- svelte-ignore event_directive_deprecated -->
 <dialog class="modal" id="add_plan_modal">
     <div class="modal-box">
         <h3 class="text-lg font-bold">요금제 추가</h3>
@@ -18,13 +113,49 @@
             <table class="w-full">
                 <tbody>
                     <tr>
+                        <th class="tb_th">통신사</th>
+                        <td class="tb_td">
+                            <select
+                                bind:value={carrier}
+                                class="w-full input-box"
+                                on:change={getFilterGroup}
+                            >
+                                {#each carriers as carrier_option}
+                                    <option value={carrier_option}
+                                        >{carrier_option}</option
+                                    >
+                                {/each}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="tb_th">통신방식</th>
+                        <td class="tb_td">
+                            <select
+                                bind:value={network_type}
+                                class="w-full input-box"
+                                on:change={getFilterGroup}
+                            >
+                                {#each networkTypes as networkTypes_option}
+                                    <option value={networkTypes_option}>
+                                        {networkTypes_option}
+                                    </option>
+                                {/each}
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <th class="tb_th">그룹</th>
                         <td class="tb_td">
                             <select
                                 bind:value={group_id}
                                 class="w-full input-box"
                             >
-                                <option value="">선택하세요</option>
+                                {#each filterPlanGroups as groupData}
+                                    <option value={groupData.id}>
+                                        {groupData.name}
+                                    </option>
+                                {/each}
                             </select>
                         </td>
                     </tr>
@@ -64,7 +195,7 @@
                             <input
                                 type="text"
                                 class="w-full input-box"
-                                bind:value={data}
+                                bind:value={usedata}
                             />
                         </td>
                     </tr>
@@ -94,8 +225,24 @@
 
         <div class="modal-action">
             <form method="dialog">
-                <!-- if there is a button in form, it will close the modal -->
-                <button class="btn">Close</button>
+                {#if actButton === "create"}
+                    <button
+                        class="btn btn-outline btn-primary"
+                        value="upload"
+                        on:click={upsert_plan_act}
+                    >
+                        추가
+                    </button>
+                {:else}
+                    <button
+                        class="btn btn-outline btn-primary"
+                        value="update"
+                        on:click={upsert_plan_groups}
+                    >
+                        수정
+                    </button>
+                {/if}
+                <button class="btn">닫기</button>
             </form>
         </div>
     </div>
@@ -123,6 +270,7 @@
                         class="checkbox checkbox-sm bg-white checked:bg-white"
                     />
                 </th>
+                <th class="tb_th">버튼</th>
                 <th class="tb_th">통신사</th>
                 <th class="tb_th">통신방식</th>
                 <th class="tb_th">그룹</th>
@@ -135,33 +283,79 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td class="border border-gray-300 text-center w-[50px]">
-                    <div class="flex items-center justify-center">
-                        <input type="checkbox" class="checkbox checkbox-sm" />
-                    </div>
-                </td>
+            {#each plans as planData, idx}
+                <tr>
+                    <td class="border border-gray-300 text-center w-[50px]">
+                        <div class="flex items-center justify-center">
+                            <input
+                                type="checkbox"
+                                class="checkbox checkbox-sm"
+                            />
+                        </div>
+                    </td>
+                    <td class="tb_td">
+                        <div class="flex justify-center items-center gap-1.5">
+                            <button
+                                class="btn btn-info btn-xs text-white"
+                                value={idx}
+                                on:click={update_modal_open}
+                            >
+                                수정
+                            </button>
 
-                <td class="tb_td">SKT</td>
-                <td class="tb_td">5G</td>
-                <td class="tb_td">5GX 플랜</td>
-                <td class="tb_td"> 프리미어 에센셜 </td>
-                <td class="tb_td">115000</td>
-                <td class="tb_td">
-                    <div class="w-[190px]">유무선 무제한 (부가 음성 300분)</div>
-                </td>
-                <td class="tb_td">완전 무제한</td>
-                <td class="tb_td">완전 무제한</td>
-                <td class="tb_td">
-                    <div class="max-w-[500px] truncate mx-auto">
-                        Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                        Cupiditate in dolor animi. Ut accusamus odio
-                        voluptatibus recusandae! Voluptatem harum natus
-                        exercitationem dolorem officiis, itaque neque nostrum!
-                        Sed impedit natus voluptas!
-                    </div>
-                </td>
-            </tr>
+                            <button
+                                class="text-xl text-red-400 cursor-pointer"
+                                value="down"
+                                data-idx={idx}
+                                on:click={sortFunc}
+                            >
+                                <i
+                                    class="fa fa-chevron-circle-up"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+                            <button
+                                class="text-xl text-red-400 cursor-pointer"
+                                value="up"
+                                data-idx={idx}
+                                on:click={sortFunc}
+                            >
+                                <i
+                                    class="fa fa-chevron-circle-down"
+                                    aria-hidden="true"
+                                ></i>
+                            </button>
+
+                            <button
+                                class="text-xl text-red-400 cursor-pointer"
+                                value={planData.id}
+                                on:click={deletePlanGroup}
+                            >
+                                <i class="fa fa-times-circle" aria-hidden="true"
+                                ></i>
+                            </button>
+                        </div>
+                    </td>
+
+                    <td class="tb_td">{planData.carrier}</td>
+                    <td class="tb_td">{planData.network_type}</td>
+                    <td class="tb_td">{planData.group_name}</td>
+                    <td class="tb_td">{planData.name}</td>
+                    <td class="tb_td">{planData.price}</td>
+                    <td class="tb_td">
+                        <div class="w-[190px]">
+                            {planData.voice}
+                        </div>
+                    </td>
+                    <td class="tb_td">{planData.usedata}</td>
+                    <td class="tb_td">{planData.sms}</td>
+                    <td class="tb_td">
+                        <div class="max-w-[500px] truncate mx-auto">
+                            {planData.benefits}
+                        </div>
+                    </td>
+                </tr>
+            {/each}
         </tbody>
     </table>
 </div>

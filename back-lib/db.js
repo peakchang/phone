@@ -83,7 +83,7 @@ CREATE TABLE plans (
     name VARCHAR(100) NOT NULL,
     price INT NOT NULL,
     voice VARCHAR(50),
-    data VARCHAR(50),
+    usedata VARCHAR(50),
     sms VARCHAR(50),
     benefits TEXT,
     sort_order INT DEFAULT 0,
@@ -92,6 +92,8 @@ CREATE TABLE plans (
     CONSTRAINT fk_plan_group FOREIGN KEY (group_id) REFERENCES plan_groups(id) ON DELETE CASCADE,
     CONSTRAINT uq_plans_group_name UNIQUE (group_id, name)
 );
+
+ALTER TABLE plans CHANGE COLUMN data usedata VARCHAR(50);
 
 DELIMITER $$
 

@@ -3,10 +3,8 @@
     import { back_api } from "$lib/const";
     import { invalidateAll } from "$app/navigation";
     import { onMount } from "svelte";
-
-    const carriers = ["SKT", "KT", "LGU"];
-    const networkTypes = ["5G", "LTE"];
-
+    import { carriers, networkTypes } from "$lib/const";
+    
     // 출력될 변수!!
     let plans_groups = $state([]);
 
