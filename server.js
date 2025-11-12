@@ -33,7 +33,8 @@ if (process.env.NODE_ENV === 'development') {
     }
 } else {
     corsOptions = {
-        origin: ['https://happy-toad1.shop', 'https://adpeak.kr'],  // 1번 도메인만 허용
+        // origin: ['https://happy-toad1.shop', 'https://adpeak.kr'],
+        origin: true,
         credentials: true,  // 인증 정보 포함 (쿠키, 세션 등)
         methods: ['GET', 'POST', 'PUT', 'DELETE'],  // 허용할 HTTP 메서드
         allowedHeaders: ['Content-Type', 'Authorization'],  // 허용할 헤더
