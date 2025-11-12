@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "scripts": {
-    "start": "cross-env NODE_ENV=production PORT=3000 pm2 start server.js -i 0 --name happytoad",
+    "start": "cross-env NODE_ENV=production PORT=3060 pm2 start server.js -i 0 --name omyphone",
     "dev": "nodemon server"
   }
 }
