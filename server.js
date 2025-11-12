@@ -6,11 +6,11 @@ const app = express();
 
 
 dotenv.config();
-// import { handler } from "./front/build/handler.js"
+import { handler } from "./app/build/handler.js"
 
 import { admRouter } from "./routes/admin.js"
 
-app.set('port', process.env.PORT || 3050);
+app.set('port', process.env.PORT || 3060);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // ESM 오류 해결을 위해 __dirname, __filename 직접 변수 작성
@@ -51,7 +51,7 @@ app.use('/chk', (req, res) => {
     res.send('백엔드 생성 완료!!')
 });
 
-// app.use(handler);
+app.use(handler);
 
 
 app.listen(app.get('port'), () => {
