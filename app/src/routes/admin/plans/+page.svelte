@@ -104,6 +104,8 @@
     }
 
     async function sortFunc() {}
+
+    async function deletePlanGroup() {}
 </script>
 
 <!-- svelte-ignore event_directive_deprecated -->
