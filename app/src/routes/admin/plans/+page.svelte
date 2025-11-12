@@ -1,4 +1,6 @@
 <script>
+
+    // 업로드 및 업데이트 할 변수들
     let group_id = $state("");
     let name = $state("");
     let price = $state(0);

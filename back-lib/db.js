@@ -41,9 +41,20 @@ CREATE TABLE plan_groups (
     sort_order INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT uq_plan_groups_carrier_network UNIQUE (carrier, network_type),
+    CONSTRAINT uq_plan_groups_carrier_network UNIQUE (carrier, network_type, name),
     CONSTRAINT uq_plan_groups_sort_order UNIQUE (sort_order)
 );
+
+>> uq_plan_groups_carrier_network UNIQUE 묶음 수정! 3개로 묶여 있으면 상관 없음~
+
+ALTER TABLE plan_groups
+DROP INDEX uq_plan_groups_carrier_network;
+
+ALTER TABLE plan_groups
+ADD CONSTRAINT uq_plan_groups_carrier_network_name
+UNIQUE (carrier, network_type, name);
+
+
 
 ALTER TABLE plan_groups
 ADD CONSTRAINT uq_plan_groups_sort_order UNIQUE (sort_order);
@@ -82,6 +93,22 @@ CREATE TABLE plans (
     CONSTRAINT uq_plans_group_name UNIQUE (group_id, name)
 );
 
+DELIMITER $$
+
+CREATE TRIGGER trg_plans_sort_order
+BEFORE INSERT ON plans
+FOR EACH ROW
+BEGIN
+    IF NEW.sort_order IS NULL OR NEW.sort_order = 0 THEN
+        SET NEW.sort_order = (
+            SELECT COALESCE(MAX(sort_order), 0) + 1
+            FROM plans
+        );
+    END IF;
+END$$
+
+DELIMITER ;
+
 // 상품 그룹
 
 아이폰 / 갤럭시 이따위 >> 이게 메뉴가 될 예정
@@ -93,6 +120,23 @@ CREATE TABLE product_groups (
   sort_order INT DEFAULT 0,
   CONSTRAINT uq_product_groups_name UNIQUE (name)
 );
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_product_groups_sort_order
+BEFORE INSERT ON product_groups
+FOR EACH ROW
+BEGIN
+    IF NEW.sort_order IS NULL OR NEW.sort_order = 0 THEN
+        SET NEW.sort_order = (
+            SELECT COALESCE(MAX(sort_order), 0) + 1
+            FROM product_groups
+        );
+    END IF;
+END$$
+
+DELIMITER ;
 
 
 // 상품
@@ -178,6 +222,23 @@ CREATE TABLE products (
 
   CONSTRAINT uq_products_plans_group_id_name UNIQUE (plans_group_id, name)
 );
+
+
+DELIMITER $$
+
+CREATE TRIGGER trg_products_sort_order
+BEFORE INSERT ON products
+FOR EACH ROW
+BEGIN
+    IF NEW.sort_order IS NULL OR NEW.sort_order = 0 THEN
+        SET NEW.sort_order = (
+            SELECT COALESCE(MAX(sort_order), 0) + 1
+            FROM products
+        );
+    END IF;
+END$$
+
+DELIMITER ;
 
 
 // 후기 테이블

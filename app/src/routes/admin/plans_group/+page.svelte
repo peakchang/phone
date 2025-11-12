@@ -11,6 +11,7 @@
     let plans_groups = $state([]);
 
     // 입력 될 항목 변수들
+    let id = $state("");
     let carrier = $state("SKT");
     let network_type = $state("5G");
     let name = $state("");
@@ -21,23 +22,27 @@
 
     let { data } = $props();
 
-    onMount(() => {
+    $effect(() => {
         plans_groups = data.plan_groups;
-        console.log(plans_groups);
     });
+
+    // onMount(() => {
+    //     plans_groups = data.plan_groups;
+    //     console.log(plans_groups);
+    // });
 
     // create
     async function upload_plan_groups() {
-        console.log(back_api);
-
+        let type = "upload";
         try {
             const res = await axios.post(
-                `${back_api}/admin/plans_groups_upload`,
+                `${back_api}/admin/plans_groups_upload_update`,
                 {
                     carrier,
                     network_type,
                     name,
                     info,
+                    type,
                 },
             );
             alert("요금제 그룹이 추가되었습니다.");
@@ -53,12 +58,89 @@
         actButton = "update";
         console.log(this.value);
 
+        id = plans_groups[this.value].id;
         carrier = plans_groups[this.value].carrier;
         network_type = plans_groups[this.value].network_type;
         name = plans_groups[this.value].name;
         info = plans_groups[this.value].info;
 
         add_group_modal.showModal();
+    }
+
+    async function update_plan_groups() {
+        let type = "update";
+        try {
+            const res = await axios.post(
+                `${back_api}/admin/plans_groups_upload_update`,
+                {
+                    id,
+                    carrier,
+                    network_type,
+                    name,
+                    info,
+                    type,
+                },
+            );
+            alert("요금제 그룹이 수정이 완료 되었습니다.");
+            invalidateAll();
+        } catch (error) {
+            alert("통신사와 통신 방식은 중복될수 없습니다.");
+        }
+    }
+
+    async function sortFunc() {
+        console.log(this.value);
+        console.log(this.dataset.idx);
+
+        let originData = {};
+        let changeData = {};
+
+        if (this.value === "up") {
+            originData = plans_groups[this.dataset.idx];
+            changeData = plans_groups[Number(this.dataset.idx) + 1];
+        } else {
+            originData = plans_groups[this.dataset.idx];
+            changeData = plans_groups[Number(this.dataset.idx) - 1];
+        }
+
+        if (!originData || !changeData) {
+            alert("더이상 이동할수 없습니다.");
+            return;
+        }
+
+        console.log("???");
+
+        try {
+            const res = await axios.post(`${back_api}/admin/plan_groups_sort`, {
+                origin_id: originData.id,
+                origin_sort: originData.sort_order,
+                change_id: changeData.id,
+                change_sort: changeData.sort_order,
+            });
+            invalidateAll();
+        } catch (error) {
+            alert("정렬 변경에 실패하였습니다.");
+        }
+    }
+
+    async function deletePlanGroup() {
+        console.log(this.value);
+        let confirm_check = confirm("정말 요금제 그룹을 삭제하시겠습니까?");
+        if (!confirm_check) {
+            return;
+        }
+        try {
+            const res = await axios.post(
+                `${back_api}/admin/plan_groups_delete`,
+                {
+                    id: this.value,
+                },
+            );
+            alert("요금제 그룹이 삭제되었습니다.");
+            invalidateAll();
+        } catch (error) {
+            alert("요금제 그룹 삭제에 실패하였습니다.");
+        }
     }
 </script>
 
@@ -136,8 +218,10 @@
                 {#if actButton === "create"}
                     <button
                         class="btn btn-outline btn-primary"
-                        on:click={upload_plan_groups}>추가</button
+                        on:click={upload_plan_groups}
                     >
+                        추가
+                    </button>
                 {:else}
                     <button
                         class="btn btn-outline btn-primary"
@@ -208,16 +292,35 @@
                                 수정
                             </button>
 
-                            <button class="text-xl text-red-400 cursor-pointer">
+                            <button
+                                class="text-xl text-red-400 cursor-pointer"
+                                value="down"
+                                data-idx={idx}
+                                on:click={sortFunc}
+                            >
                                 <i
                                     class="fa fa-chevron-circle-up"
                                     aria-hidden="true"
                                 ></i>
                             </button>
-                            <button class="text-xl text-red-400 cursor-pointer">
+                            <button
+                                class="text-xl text-red-400 cursor-pointer"
+                                value="up"
+                                data-idx={idx}
+                                on:click={sortFunc}
+                            >
                                 <i
                                     class="fa fa-chevron-circle-down"
                                     aria-hidden="true"
+                                ></i>
+                            </button>
+
+                            <button
+                                class="text-xl text-red-400 cursor-pointer"
+                                value={planData.id}
+                                on:click={deletePlanGroup}
+                            >
+                                <i class="fa fa-times-circle" aria-hidden="true"
                                 ></i>
                             </button>
                         </div>
