@@ -8,6 +8,24 @@ const admRouter = express.Router();
 
 // ------------------------------------ 플랜 그룹 관리 ------------------------------------ //
 
+
+// 그룹 불러오기 (read)
+admRouter.use('/get_plan_groups', async (req, res) => {
+    console.log('잘 안들어올거야?!?!??!');
+    
+    let plan_groups = [];
+
+    try {
+        const getPlanGroupsQuery = `SELECT * FROM plan_groups ORDER BY sort_order ASC`;
+        const [planGroups] = await sql_con.promise().query(getPlanGroupsQuery);
+        plan_groups = planGroups;
+        res.status(200).json({ plan_groups })
+    } catch (error) {
+        console.error(error.message);
+        res.status(500).json({ error: error.message });
+    }
+})
+
 // 그룹 업로드 / 업데이트 (create / update)
 admRouter.post('/plans_groups_upload_update', async (req, res) => {
 
@@ -37,22 +55,6 @@ admRouter.post('/plans_groups_upload_update', async (req, res) => {
     }
 
     console.log(body);
-})
-
-// 그룹 불러오기 (read)
-admRouter.use('/get_plan_groups', async (req, res) => {
-
-    let plan_groups = [];
-
-    try {
-        const getPlanGroupsQuery = `SELECT * FROM plan_groups ORDER BY sort_order ASC`;
-        const [planGroups] = await sql_con.promise().query(getPlanGroupsQuery);
-        plan_groups = planGroups;
-        res.status(200).json({ plan_groups })
-    } catch (error) {
-        console.error(error.message);
-        res.status(500).json({ error: error.message });
-    }
 })
 
 
