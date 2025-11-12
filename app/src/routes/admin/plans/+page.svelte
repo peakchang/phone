@@ -102,6 +102,8 @@
 
         add_plan_modal.showModal();
     }
+
+    async function sortFunc() {}
 </script>
 
 <!-- svelte-ignore event_directive_deprecated -->
@@ -259,7 +261,8 @@
         요금제 추가
     </button>
 </div>
-
+<!-- svelte-ignore event_directive_deprecated -->
+<!-- svelte-ignore a11y_consider_explicit_label -->
 <div>
     <table class="w-full">
         <thead>
