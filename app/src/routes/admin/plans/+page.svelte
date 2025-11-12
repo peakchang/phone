@@ -83,6 +83,8 @@
                 const message = error.response.data.error;
                 alert(message);
             }
+        }else{
+            
         }
     }
 
@@ -241,7 +243,7 @@
                     <button
                         class="btn btn-outline btn-primary"
                         value="update"
-                        on:click={upsert_plan_groups}
+                        on:click={upsert_plan_act}
                     >
                         수정
                     </button>
