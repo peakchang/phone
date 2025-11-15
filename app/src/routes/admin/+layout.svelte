@@ -7,6 +7,10 @@
 
     function movePage() {
         const liList = gnbUl.children;
+        console.log(liList);
+        console.log(this);
+        
+        
         for (let i = 0; i < liList.length; i++) {
             const el = liList[i];
             el.classList.remove("gnb-on");

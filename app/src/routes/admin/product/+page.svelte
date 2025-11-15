@@ -2,6 +2,8 @@
     const carriers = ["SKT", "KT", "LGU"];
     const networkType = ["5G", "LTE"];
 
+    let actButton = $state("upload");
+
     let name = $state("");
     let description = $state("");
 
@@ -38,7 +40,23 @@
         <div class="modal-action">
             <form method="dialog">
                 <!-- if there is a button in form, it will close the modal -->
-                <button class="btn">Close</button>
+                <!-- svelte-ignore event_directive_deprecated -->
+                {#if actButton === "upload"}
+                    <button
+                        class="btn btn-outline btn-primary"
+                        on:click={upload_product_group}
+                    >
+                        추가
+                    </button>
+                {:else}
+                    <button
+                        class="btn btn-outline btn-primary"
+                        on:click={upload_product_group}
+                    >
+                        수정
+                    </button>
+                {/if}
+                <button class="btn">닫기</button>
             </form>
         </div>
     </div>
@@ -151,7 +169,7 @@
                 <td class="tb_td">
                     <div class="flex justify-center items-center gap-2">
                         <span> 갤럭시S25 </span>
-                        
+
                         <button
                             class="btn btn-accent btn-xs text-white"
                             on:click={() => {

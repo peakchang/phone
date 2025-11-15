@@ -126,8 +126,6 @@
     }
 
     async function sortFunc() {
-        console.log(this.value);
-        console.log(this.dataset.idx);
 
         let originData = {};
         let changeData = {};
@@ -145,15 +143,10 @@
             return;
         }
 
-        console.log(originData.id);
-        console.log(originData.plan_sort_order);
-        console.log(changeData.id);
-        console.log(changeData.plan_sort_order);
-
-        console.log("???");
-
         try {
-            const res = await axios.post(`${back_api}/admin/plans_sort`, {
+            const table = "plans";
+            const res = await axios.post(`${back_api}/admin/sort`, {
+                table,
                 origin_id: originData.id,
                 origin_sort: originData.plan_sort_order,
                 change_id: changeData.id,

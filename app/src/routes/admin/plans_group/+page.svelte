@@ -4,7 +4,7 @@
     import { invalidateAll } from "$app/navigation";
     import { onMount } from "svelte";
     import { carriers, networkTypes } from "$lib/const";
-    
+
     // 출력될 변수!!
     let plans_groups = $state([]);
 
@@ -16,7 +16,7 @@
     let info = $state("");
 
     // action 변수
-    let actButton = $state("create");
+    let actButton = $state("upload");
 
     let { data } = $props();
 
@@ -29,7 +29,7 @@
     //     console.log(plans_groups);
     // });
 
-    // create
+    // upload
     async function upload_plan_groups() {
         let type = "upload";
         try {
@@ -46,6 +46,7 @@
             alert("요금제 그룹이 추가되었습니다.");
             invalidateAll();
         } catch (error) {
+            console.error(error.message);
             alert("통신사와 통신 방식은 중복될수 없습니다.");
         }
     }
@@ -86,6 +87,41 @@
         }
     }
 
+    // async function sortFunc() {
+    //     console.log(this.value);
+    //     console.log(this.dataset.idx);
+
+    //     let originData = {};
+    //     let changeData = {};
+
+    //     if (this.value === "up") {
+    //         originData = plans_groups[this.dataset.idx];
+    //         changeData = plans_groups[Number(this.dataset.idx) + 1];
+    //     } else {
+    //         originData = plans_groups[this.dataset.idx];
+    //         changeData = plans_groups[Number(this.dataset.idx) - 1];
+    //     }
+
+    //     if (!originData || !changeData) {
+    //         alert("더이상 이동할수 없습니다.");
+    //         return;
+    //     }
+
+    //     console.log("???");
+
+    //     try {
+    //         const res = await axios.post(`${back_api}/admin/plan_groups_sort`, {
+    //             origin_id: originData.id,
+    //             origin_sort: originData.sort_order,
+    //             change_id: changeData.id,
+    //             change_sort: changeData.sort_order,
+    //         });
+    //         invalidateAll();
+    //     } catch (error) {
+    //         alert("정렬 변경에 실패하였습니다.");
+    //     }
+    // }
+
     async function sortFunc() {
         console.log(this.value);
         console.log(this.dataset.idx);
@@ -106,10 +142,10 @@
             return;
         }
 
-        console.log("???");
-
         try {
-            const res = await axios.post(`${back_api}/admin/plan_groups_sort`, {
+            const table = "plan_groups";
+            const res = await axios.post(`${back_api}/admin/sort`, {
+                table,
                 origin_id: originData.id,
                 origin_sort: originData.sort_order,
                 change_id: changeData.id,
@@ -213,7 +249,7 @@
             <form method="dialog">
                 <!-- if there is a button in form, it will close the modal -->
                 <!-- svelte-ignore event_directive_deprecated -->
-                {#if actButton === "create"}
+                {#if actButton === "upload"}
                     <button
                         class="btn btn-outline btn-primary"
                         on:click={upload_plan_groups}
@@ -239,7 +275,7 @@
     <button
         class="btn btn-primary btn-sm"
         on:click={() => {
-            actButton = "create";
+            actButton = "upload";
             carrier = "SKT";
             network_type = "5G";
             name = "";

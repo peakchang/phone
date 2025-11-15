@@ -9,6 +9,7 @@ dotenv.config();
 import { handler } from "./app/build/handler.js"
 
 import { admRouter } from "./routes/admin.js"
+import { apiRouter } from './routes/api.js';
 
 app.set('port', process.env.PORT || 3060);
 app.use(express.json());
@@ -23,7 +24,7 @@ console.log(__dirname);
 
 app.use(express.static('public', { ignore: ['favicon.ico'] }));
 app.use('/editor', express.static(path.join(__dirname, 'public/uploads/editor')));
-app.use('/image', express.static(path.join(__dirname, 'public/uploads/image')));
+app.use('/img', express.static(path.join(__dirname, 'public/uploads/image')));
 
 let corsOptions = {}
 if (process.env.NODE_ENV === 'development') {
@@ -46,6 +47,8 @@ app.use(cors(corsOptions));
 app.enable('trust proxy');
 
 app.use('/api/v7/admin', admRouter);
+app.use('/api/v7/', apiRouter);
+
 
 app.use('/chk', (req, res) => {
     res.send('백엔드 생성 완료!!')

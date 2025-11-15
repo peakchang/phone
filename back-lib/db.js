@@ -118,10 +118,13 @@ DELIMITER ;
 CREATE TABLE product_groups (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
+  img_url VARCHAR(255),
   description TEXT,
   sort_order INT DEFAULT 0,
   CONSTRAINT uq_product_groups_name UNIQUE (name)
 );
+
+ALTER TABLE product_groups ADD COLUMN img_url VARCHAR(255) AFTER name;
 
 
 DELIMITER $$
@@ -171,6 +174,7 @@ CREATE TABLE products (
   id INT AUTO_INCREMENT PRIMARY KEY,
   plans_group_id INT NOT NULL,
   name VARCHAR(150) NOT NULL,
+  img_url VARCHAR(255),
   use_carrier BOOLEAN DEFAULT TRUE,
 
   skt_msrp VARCHAR(255),
@@ -225,6 +229,7 @@ CREATE TABLE products (
   CONSTRAINT uq_products_plans_group_id_name UNIQUE (plans_group_id, name)
 );
 
+ALTER TABLE products ADD COLUMN img_url VARCHAR(255) AFTER name;
 
 DELIMITER $$
 
