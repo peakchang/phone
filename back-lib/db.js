@@ -154,82 +154,66 @@ skt_plans VARCHAR(255),             -- "101,102"
 skt_public_subsidy VARCHAR(255),    -- 공시지원금(기본)
 
 -- 신규(NEW)
-skt_new_public_extra VARCHAR(255),      -- 신규 공시 추가지원
-skt_new_select_extra VARCHAR(255),      -- 신규 선택약정 추가지원
-skt_new_discount VARCHAR(255),          -- 신규 할인
+skt_new_public_gongtong VARCHAR(1000),      -- 신규 공시 공통지원
+skt_new_public_free VARCHAR(1000),          -- 신규 공시 프리할수
+skt_new_select_gongtong VARCHAR(1000),      -- 신규 선택약정 공통지원
+skt_new_select_free VARCHAR(1000),          -- 신규 선택약정 프리할부
 
 -- 번호이동(MNP)
-skt_mnp_public_extra VARCHAR(255),      -- 번이 공시 추가지원
-skt_mnp_select_extra VARCHAR(255),      -- 번이 선택약정 추가지원
-skt_mnp_discount VARCHAR(255),          -- 번이 할인
+skt_mnp_public_gongtong VARCHAR(1000),      -- MNP 공시 공통지원
+skt_mnp_public_free VARCHAR(1000),          -- MNP 공시 프리할수
+skt_mnp_select_gongtong VARCHAR(1000),      -- MNP 선택약정 공통지원
+skt_mnp_select_free VARCHAR(1000),          -- MNP 선택약정 프리할부
 
 -- 기기변경(CHG)
-skt_chg_public_extra VARCHAR(255),      -- 기변 공시 추가지원
-skt_chg_select_extra VARCHAR(255),      -- 기변 선택약정 추가지원
-skt_chg_discount VARCHAR(255),          -- 기변 할인
+skt_chg_public_gongtong VARCHAR(1000),      -- 기변 공시 공통지원
+skt_chg_public_free VARCHAR(1000),          -- 기변 공시 프리할수
+skt_chg_select_gongtong VARCHAR(1000),      -- 기변 선택약정 공통지원
+skt_chg_select_free VARCHAR(1000),          -- 기변 선택약정 프리할부
+
 
 -----------------
 
 CREATE TABLE products (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  plans_group_id INT NOT NULL,
-  name VARCHAR(150) NOT NULL,
-  img_url VARCHAR(255),
-  use_carrier BOOLEAN DEFAULT TRUE,
 
-  skt_msrp VARCHAR(255),
-  skt_storages VARCHAR(255),
-  skt_plans VARCHAR(255),
-  skt_public_subsidy VARCHAR(255), 
-  skt_new_public_extra VARCHAR(255),
-  skt_new_select_extra VARCHAR(255),
-  skt_new_discount VARCHAR(255),
-  skt_mnp_public_extra VARCHAR(255),
-  skt_mnp_select_extra VARCHAR(255),
-  skt_mnp_discount VARCHAR(255),
-  skt_chg_public_extra VARCHAR(255),
-  skt_chg_select_extra VARCHAR(255),
-  skt_chg_discount VARCHAR(255),
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    plans_groups VARCHAR(255),
+    name VARCHAR(150) NOT NULL,
+    sub_name VARCHAR(255),
+    img_urls TEXT,
+    use_carrier BOOLEAN DEFAULT TRUE,
+    basic_info TEXT,
+    sort_order INT DEFAULT 0,
+    product_info_top TEXT,
+    product_info_imgs TEXT,
+    product_info_bottom TEXT,
+    colors VARCHAR(255),
+    color_codes VARCHAR(255),
 
-  kt_msrp VARCHAR(255),
-  kt_storages VARCHAR(255),
-  kt_plans VARCHAR(255),
-  kt_public_subsidy VARCHAR(255), 
-  kt_new_public_extra VARCHAR(255),
-  kt_new_select_extra VARCHAR(255),
-  kt_new_discount VARCHAR(255),
-  kt_mnp_public_extra VARCHAR(255),
-  kt_mnp_select_extra VARCHAR(255),
-  kt_mnp_discount VARCHAR(255),
-  kt_chg_public_extra VARCHAR(255),
-  kt_chg_select_extra VARCHAR(255),
-  kt_chg_discount VARCHAR(255),
+    skt_msrp VARCHAR(255),
+    skt_storages VARCHAR(255),
+    skt_plans VARCHAR(255),
+    skt_public_subsidy VARCHAR(255),
+    skt_discount_json TEXT,
 
-  lgu_msrp VARCHAR(255),
-  lgu_storages VARCHAR(255),
-  lgu_plans VARCHAR(255),
-  lgu_public_subsidy VARCHAR(255), 
-  lgu_new_public_extra VARCHAR(255),
-  lgu_new_select_extra VARCHAR(255),
-  lgu_new_discount VARCHAR(255),
-  lgu_mnp_public_extra VARCHAR(255),
-  lgu_mnp_select_extra VARCHAR(255),
-  lgu_mnp_discount VARCHAR(255),
-  lgu_chg_public_extra VARCHAR(255),
-  lgu_chg_select_extra VARCHAR(255),
-  lgu_chg_discount VARCHAR(255),
+    kt_msrp VARCHAR(255),
+    kt_storages VARCHAR(255),
+    kt_plans VARCHAR(255),
+    kt_public_subsidy VARCHAR(255),
+    kt_discount_json TEXT,
 
-  sort_order INT DEFAULT 0,
-  description LONGTEXT,
-  colors VARCHAR(255),
-  color_codes VARCHAR(255),
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    lgu_msrp VARCHAR(255),
+    lgu_storages VARCHAR(255),
+    lgu_plans VARCHAR(255),
+    lgu_public_subsidy VARCHAR(255),
+    lgu_discount_json TEXT,
 
-  CONSTRAINT uq_products_plans_group_id_name UNIQUE (plans_group_id, name)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    CONSTRAINT uq_products_plans_group_id_name UNIQUE (plans_groups, name)
 );
 
-ALTER TABLE products ADD COLUMN img_url VARCHAR(255) AFTER name;
 
 DELIMITER $$
 

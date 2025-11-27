@@ -39,10 +39,8 @@ admRouter.post('/plans_groups_upload_update', async (req, res) => {
             delete body.type;
             const queryStr = getQueryStr(body, 'update', 'updated_at');
             const updatePlanGroupQuery = `UPDATE plan_groups SET ${queryStr.str} WHERE id = ?`;
-            console.log(updatePlanGroupQuery);
 
             queryStr.values.push(body.id);
-            console.log(queryStr.values);
             await sql_con.promise().query(updatePlanGroupQuery, queryStr.values);
         }
 
@@ -51,8 +49,6 @@ admRouter.post('/plans_groups_upload_update', async (req, res) => {
         res.status(500).json({ error: error.message });
         console.error(error.message);
     }
-
-    console.log(body);
 })
 
 
@@ -105,7 +101,6 @@ admRouter.use('/get_plan', async (req, res) => {
         // -- WHERE g.carrier = 'SKT' AND g.network_type = '5G' (ORDER 윗줄)
         const [planRows] = await sql_con.promise().query(getPlansQuery);
         plans = planRows;
-        console.log(plans);
 
 
         const getPlanGroupsQuery = `SELECT * FROM plan_groups ORDER BY sort_order ASC`;
@@ -126,8 +121,6 @@ admRouter.post('/plans_upload_update', async (req, res) => {
 
     try {
         if (body.type == 'upload') {
-            console.log('업로드 들어옴~~');
-
             delete body.type;
             const queryStr = getQueryStr(body, 'insert', 'created_at');
             const insertPlanGroupQuery = `INSERT INTO plans (${queryStr.str}) VALUES (${queryStr.question})`;
@@ -136,10 +129,7 @@ admRouter.post('/plans_upload_update', async (req, res) => {
             delete body.type;
             const queryStr = getQueryStr(body, 'update', 'updated_at');
             const updatePlanGroupQuery = `UPDATE plans SET ${queryStr.str} WHERE id = ?`;
-            console.log(updatePlanGroupQuery);
-
             queryStr.values.push(body.id);
-            console.log(queryStr.values);
             await sql_con.promise().query(updatePlanGroupQuery, queryStr.values);
         }
 
@@ -155,8 +145,6 @@ admRouter.post('/plans_upload_update', async (req, res) => {
         res.status(500).json({ error: errMessage });
         console.error(error.message);
     }
-
-    console.log(body);
 })
 
 // admRouter.use('/plans_sort', async (req, res) => {
@@ -194,8 +182,6 @@ admRouter.use('/plan_delete', async (req, res) => {
 
 // 그룹 불러오기 (read)
 admRouter.use('/get_product_groups', async (req, res) => {
-    console.log('잘 안들어올거야?!?!??!');
-
     let product_groups = [];
 
     try {
@@ -214,8 +200,6 @@ admRouter.use('/get_product_groups', async (req, res) => {
 // 그룹 업로드 / 업데이트 (create / update)
 admRouter.post('/product_groups_upsert', async (req, res) => {
 
-    console.log('여기는 어디이이이이이이이이이?!?!??!?!?!?!????!!!');
-
     const body = req.body;
 
     try {
@@ -228,10 +212,8 @@ admRouter.post('/product_groups_upsert', async (req, res) => {
             delete body.type;
             const queryStr = getQueryStr(body, 'update');
             const updatePlanGroupQuery = `UPDATE product_groups SET ${queryStr.str} WHERE id = ?`;
-            console.log(updatePlanGroupQuery);
 
             queryStr.values.push(body.id);
-            console.log(queryStr.values);
             await sql_con.promise().query(updatePlanGroupQuery, queryStr.values);
         }
 
@@ -242,27 +224,152 @@ admRouter.post('/product_groups_upsert', async (req, res) => {
         res.status(500).json({ error: errMessage });
 
     }
-
-    console.log(body);
 })
 
 // ------------------------------------ 상품 관리 ------------------------------------ //
 
+admRouter.use('/get_plans', async (req, res) => {
+
+    const { carrier } = req.body;
+
+
+    let planArrangeList = []
+
+    try {
+        const getPlanGroupsQuery = "SELECT * FROM plan_groups WHERE carrier = ? ORDER BY sort_order ASC;";
+        const [planGroupRows] = await sql_con.promise().query(getPlanGroupsQuery, [carrier]);
+
+        for (let i = 0; i < planGroupRows.length; i++) {
+            const planGroup = planGroupRows[i];
+
+            try {
+                const getPlanQuery = "SELECT * FROM plans WHERE group_id = ? ORDER BY sort_order ASC;"
+                const [planRows] = await sql_con.promise().query(getPlanQuery, [planGroup.id]);
+
+                if (planRows.length > 0) {
+                    const planObjTemp = {
+                        id: planGroup.id,
+                        name: planGroup.name,
+                        network_type: planGroup.network_type,
+                        sort_order: planGroup.sort_order,
+                        plans: planRows
+                    }
+                    planArrangeList.push(planObjTemp)
+                }
+
+            } catch (error) {
+
+            }
+
+        }
+
+        if (planArrangeList.length == 0) {
+            return res.status(500).json({ message: "요금제가 없습니다. 요금제를 추가해 주세요." })
+        }
+
+        return res.status(200).json({ planArrangeList })
+
+    } catch (error) {
+        return res.status(500).json({ message: "에러 발생! 다시 시도해 주세요." })
+    }
+
+
+})
+
+
 admRouter.use('/get_product', async (req, res) => {
 
-    let product = [];
+    let products = [];
     let product_groups = [];
 
     try {
-        const getProductGroupsQuery = `SELECT * FROM plan_groups ORDER BY sort_order ASC`;
+        const getProductGroupsQuery = `SELECT * FROM product_groups ORDER BY sort_order ASC`;
         const [productGroupRows] = await sql_con.promise().query(getProductGroupsQuery);
-        plan_groups = productGroupRows;
+        product_groups = productGroupRows;
 
-        res.status(200).json({ product, product_groups })
+        const getProductQuery = `SELECT p.*,
+        GROUP_CONCAT(pg.name ORDER BY pg.id SEPARATOR ',') AS product_group_names
+        FROM products p
+        LEFT JOIN product_groups pg
+        ON FIND_IN_SET(pg.id, p.product_groups)
+        
+        GROUP BY p.id
+        ORDER BY sort_order ASC
+        ;`
+
+        const [productRows] = await sql_con.promise().query(getProductQuery);
+        products = productRows
+        res.status(200).json({ products, product_groups })
     } catch (error) {
         console.error(error.message);
+        res.status(500).json({})
     }
 })
+
+
+admRouter.post('/upsert_product', async (req, res) => {
+
+    const body = req.body;
+
+    console.log(body.type);
+
+    if (body.type == "upload") {
+
+        delete body.type;
+        const queryStr = getQueryStr(body, 'insert', 'created_at');
+        const insertProductQuery = `INSERT INTO products (${queryStr.str}) VALUES (${queryStr.question})`;
+        await sql_con.promise().query(insertProductQuery, queryStr.values);
+
+    } else {
+
+        const getIdx = body.id;
+        delete body.type;
+        delete body.id;
+        delete body.updated_at;
+        delete body.product_group_names;
+        delete body.created_at;
+        delete body.updated_at;
+
+        const queryStr = getQueryStr(body, 'update', 'updated_at');
+        queryStr.values.push(getIdx)
+        const updateProductQuery = `UPDATE products SET ${queryStr.str} WHERE id = ?`
+        await sql_con.promise().query(updateProductQuery, queryStr.values);
+
+    }
+
+    res.json({})
+})
+
+admRouter.post('/update_plans', async (req, res) => {
+
+    const body = req.body;
+    const planIdList = body.planData.join(',')
+
+    try {
+        const updatePlansQuery = `UPDATE products SET ${body.carrier}_plans = ? WHERE id = ?`
+        await sql_con.promise().query(updatePlansQuery, [planIdList, body.productId]);
+    } catch (error) {
+
+    }
+
+    res.json({})
+})
+
+admRouter.post('/update_detail', async (req, res) => {
+    const body = req.body;
+
+    try {
+        const updateDetailQuery = `UPDATE products SET ${body.carrier}_public_subsidy = '${body[`${body.carrier}_public_subsidy`]}', ${body.carrier}_discount_json = '${body[`${body.carrier}_discount_json`]}'  WHERE id = ?`
+
+        await sql_con.promise().query(updateDetailQuery, [body.id]);
+    } catch (error) {
+        console.error(error.message);
+
+    }
+
+    res.json({})
+})
+
 
 // ------------------------------------ 공통 ------------------------------------ //
 

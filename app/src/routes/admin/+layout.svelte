@@ -7,9 +7,6 @@
 
     function movePage() {
         const liList = gnbUl.children;
-        console.log(liList);
-        console.log(this);
-        
         
         for (let i = 0; i < liList.length; i++) {
             const el = liList[i];
@@ -157,7 +154,7 @@
         max-width: 220px;
         height: 100%;
         padding-top: 50px;
-        z-index: 999;
+        z-index: 500;
     }
 
     .gnb-ul {

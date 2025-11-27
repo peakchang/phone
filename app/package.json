@@ -22,6 +22,7 @@
 		"axios": "^1.13.2",
 		"browser-image-compression": "^2.0.2",
 		"daisyui": "^5.0.50",
+		"sortablejs": "^1.15.6",
 		"swiper": "^11.2.10",
 		"tailwindcss": "^4.1.11"
 	}
