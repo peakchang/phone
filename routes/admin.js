@@ -358,8 +358,13 @@ admRouter.post('/update_plans', async (req, res) => {
 admRouter.post('/update_detail', async (req, res) => {
     const body = req.body;
 
+    console.log(body);
+    
     try {
         const updateDetailQuery = `UPDATE products SET ${body.carrier}_public_subsidy = '${body[`${body.carrier}_public_subsidy`]}', ${body.carrier}_discount_json = '${body[`${body.carrier}_discount_json`]}'  WHERE id = ?`
+
+        console.log(updateDetailQuery);
+
 
         await sql_con.promise().query(updateDetailQuery, [body.id]);
     } catch (error) {

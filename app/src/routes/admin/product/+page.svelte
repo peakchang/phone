@@ -40,17 +40,17 @@
 
     // 불러온 요금제들에 대해서 할인 정보들을 넣기 위한 변수
     const detailConfig = [
-        { name: "신규 공시 공통지원", key: "new_gongsi_gongtong" },
+        { name: "신규 공시 추가지원", key: "new_gongsi_gongtong" },
         { name: "신규 공시 프리할부", key: "new_gongsi_free" },
-        { name: "신규 선약 공통지원", key: "new_sunyak_gongtong" },
+        { name: "신규 선약 추가지원", key: "new_sunyak_gongtong" },
         { name: "신규 선약 프리할부", key: "new_sunyak_free" },
-        { name: "MNP 공시 공통지원", key: "mnp_gongsi_gongtong" },
+        { name: "MNP 공시 추가지원", key: "mnp_gongsi_gongtong" },
         { name: "MNP 공시 프리할부", key: "mnp_gongsi_free" },
-        { name: "MNP 선약 공통지원", key: "mnp_sunyak_gongtong" },
+        { name: "MNP 선약 추가지원", key: "mnp_sunyak_gongtong" },
         { name: "MNP 선약 프리할부", key: "mnp_sunyak_free" },
-        { name: "기변 공시 공통지원", key: "gibyun_gongsi_gongtong" },
+        { name: "기변 공시 추가지원", key: "gibyun_gongsi_gongtong" },
         { name: "기변 공시 프리할부", key: "gibyun_gongsi_free" },
-        { name: "기변 선약 공통지원", key: "gibyun_sunyak_gongtong" },
+        { name: "기변 선약 추가지원", key: "gibyun_sunyak_gongtong" },
         { name: "기변 선약 프리할부", key: "gibyun_sunyak_free" },
     ];
 
@@ -58,7 +58,6 @@
         loadProductGroups = data.product_groups;
         products = data.products;
         console.log(products);
-        
     });
 
     // imgUrlArr / productInfoImgArr 에 각각 상품 이미지 / 상품 설명 이미지 배열에 담아주기! (업로드시 문자열로 변환)
@@ -112,7 +111,6 @@
 
     // 공시 / 할인 버튼 클릭 후 모달 열때 생기는 액션
     async function setProductDetail() {
-
         nowCarrier = this.dataset.carrier;
         nowProductId = this.value;
 
@@ -294,6 +292,7 @@
             alert("공시지원금 및 할인 정보 저장이 완료 되었습니다.");
             invalidateAll();
             productDetailModalBool = false;
+            location.reload();
         } catch (error) {
             const m = error.response.data.message;
             alert(m);

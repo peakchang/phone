@@ -177,7 +177,7 @@ skt_chg_select_free VARCHAR(1000),          -- 기변 선택약정 프리할부
 CREATE TABLE products (
 
     id INT AUTO_INCREMENT PRIMARY KEY,
-    plans_groups VARCHAR(255),
+    product_groups VARCHAR(255),
     name VARCHAR(150) NOT NULL,
     sub_name VARCHAR(255),
     img_urls TEXT,
